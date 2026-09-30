@@ -1,0 +1,25 @@
+# ============================================================================
+# Script de liaison ESP-IDF : place le code chaud de l'émulateur en IRAM (évite les défauts du cache d'instructions).
+#
+# Activé par menuconfig > gb-recompiled (AKA) (Kconfig : GBRT_AKA_IRAM, GBRT_AKA_IRAM_CORE). Seul .text va en IRAM, pas les tables .rodata.
+# Projet : gb-recompiled-aka (Gamebuino AKA). Auteur : Jicehel. Voir README.md.
+# ============================================================================
+# Place le code (.text seulement, pas les tables .rodata) de l'émulateur en IRAM.
+[sections:gbrt_text]
+entries:
+    .text+
+    .literal+
+
+[scheme:gbrt_iram]
+entries:
+    gbrt_text -> iram0_text
+
+[mapping:gbrt_aka_hot]
+archive: libgbrt_aka.a
+entries:
+    if GBRT_AKA_IRAM = y:
+        ppu (gbrt_iram)
+        interpreter (gbrt_iram)
+        audio (gbrt_iram)
+    if GBRT_AKA_IRAM_CORE = y:
+        gbrt (gbrt_iram)

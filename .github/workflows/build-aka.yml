@@ -1,0 +1,63 @@
+name: Build AKA (ESP32-S3)
+
+on:
+  push:
+    branches: [main, master]
+    paths-ignore: ['**.md']
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      version:
+        description: "Nom de version (ex. v1.0.0) utilisé dans les noms de fichiers"
+        type: string
+        default: "dev"
+
+env:
+  VERSION: ${{ inputs.version || format('dev-{0}', github.sha) }}
+  # Version d'ESP-IDF : mets ici celle avec laquelle tu compiles tes autres jeux AKA.
+  IDF_VERSION: v5.4
+
+jobs:
+  aka:
+    name: Firmware AKA (esp32s3)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Vérifier les fichiers propres à la console
+        run: |
+          missing=0
+          for f in components/gamebuino/CMakeLists.txt sdkconfig.defaults; do
+            if [ ! -e "$f" ]; then
+              echo "::error file=$f::Fichier manquant : copie-le depuis ton projet AKA (pAKAman / Asteria) dans le dépôt."
+              missing=1
+            fi
+          done
+          # Si sdkconfig.defaults désigne une table de partitions perso, elle doit être dans le dépôt.
+          csv=$(grep -oP 'CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="\K[^"]+' sdkconfig.defaults 2>/dev/null || true)
+          if [ -n "$csv" ] && [ ! -e "$csv" ]; then
+            echo "::error file=$csv::Table de partitions référencée par sdkconfig.defaults mais absente du dépôt."
+            missing=1
+          fi
+          exit $missing
+
+      - name: Compiler avec ESP-IDF
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: ${{ env.IDF_VERSION }}
+          target: esp32s3
+          command: idf.py build
+
+      - name: Rapport de taille
+        run: |
+          ls -la build/gb_recompiled_aka.bin
+          mkdir -p dist
+          cp build/gb_recompiled_aka.bin "dist/gb-recompiled-aka-${VERSION}.bin"
+          cp components/gbrt_aka/runtime/LICENSE dist/LICENSE-gb-recompiled.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aka-firmware
+          path: dist/
+          if-no-files-found: error

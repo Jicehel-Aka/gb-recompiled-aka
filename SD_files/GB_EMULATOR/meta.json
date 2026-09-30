@@ -1,0 +1,7 @@
+{
+  "title": "Game Boy Emulator",
+  "description": "Emulateur Game Boy et Game Boy Color : lit les ROM .gb et .gbc du dossier GB de la carte SD (sous-dossiers acceptes), avec son, sauvegardes batterie et zoom 1,5x. Base sur le runtime gb-recompiled.",
+  "author": "Jicehel",
+  "version": "1.0",
+  "date": "2026-09-30"
+}

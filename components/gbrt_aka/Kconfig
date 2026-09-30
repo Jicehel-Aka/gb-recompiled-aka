@@ -1,0 +1,23 @@
+# ============================================================================
+# Options de menuconfig du composant gbrt_aka (placement du code en IRAM).
+#
+# Projet : gb-recompiled-aka (Gamebuino AKA). Auteur : Jicehel. Voir README.md.
+# ============================================================================
+menu "gb-recompiled (AKA)"
+
+    config GBRT_AKA_IRAM
+        bool "Code chaud du PPU, de l'interpréteur et de l'audio en IRAM"
+        default y
+        help
+            Évite les défauts du cache d'instructions (code lu depuis la flash). Coûte environ 40 à 70 Ko d'IRAM.
+            Décocher si la SRAM interne manque.
+
+    config GBRT_AKA_IRAM_CORE
+        bool "Aussi le cœur de l'émulateur (gbrt.c : timers, bus, DMA) en IRAM"
+        depends on GBRT_AKA_IRAM
+        default n
+        help
+            Ajoute environ 50 à 70 Ko d'IRAM (dont du code froid : sauvegarde d'états). À essayer si le gain
+            de la première option ne suffit pas, en comparant le rapport de charge affiché sur la liaison série.
+
+endmenu
