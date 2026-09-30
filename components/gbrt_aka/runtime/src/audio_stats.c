@@ -7,6 +7,7 @@
  * Rôle AKA : Diagnostic seulement ; non appelé par le lecteur AKA.
  */
 
+#include <inttypes.h>
 #include "audio_stats.h"
 #include <stdio.h>
 #include <string.h>
@@ -81,8 +82,8 @@ void audio_stats_update_buffer(uint32_t fill_samples, uint32_t capacity_samples,
 
 void audio_stats_print(void) {
     printf("[AUDIO] Rate: %.0f Hz (expected: 44100) | "
-           "Generated: %u | Queued: %u | Dropped: %u | "
-           "Buffer: %u/%u samples (%.1f ms) | Underruns: %u\n",
+           "Generated: %" PRIu32 " | Queued: %" PRIu32 " | Dropped: %" PRIu32 " | "
+           "Buffer: %" PRIu32 "/%" PRIu32 " samples (%.1f ms) | Underruns: %" PRIu32 "\n",
            g_audio_stats.sample_rate_actual,
            g_audio_stats.last_samples_generated,
            g_audio_stats.last_samples_queued,
@@ -121,7 +122,7 @@ const char* audio_stats_get_summary(void) {
     }
     
     snprintf(g_stats_buffer, sizeof(g_stats_buffer),
-        "Audio: %.0f Hz | Buf: %.0f ms | Fill: %u/%u | %s\n"
+        "Audio: %.0f Hz | Buf: %.0f ms | Fill: %" PRIu32 "/%" PRIu32 " | %s\n"
         "Dropped: %llu | Underruns: %llu | Drop Rate: %.2f%%",
         g_audio_stats.sample_rate_actual,
         g_audio_stats.buffer_latency_ms,

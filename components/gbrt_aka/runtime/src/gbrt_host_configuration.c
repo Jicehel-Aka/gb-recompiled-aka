@@ -7,6 +7,7 @@
  * Rôle AKA : Non utilisé sur l'AKA (infrastructure amont des « ports »).
  */
 
+#include <inttypes.h>
 #include "gbrt_host_configuration.h"
 
 #include "gbrt_hash.h"
@@ -66,9 +67,9 @@ GBHostConfigurationStatus gbrt_host_configuration_serialize(
     written = snprintf(
         output,
         capacity,
-        "{\"schema\":\"%s\",\"version\":%u,\"policy_id\":\"%s\","
-        "\"applied\":%s,\"enabled\":%s,\"offset\":%d,\"minimum\":%u,"
-        "\"maximum\":%u}\n",
+        "{\"schema\":\"%s\",\"version\":%" PRIu32 ",\"policy_id\":\"%s\","
+        "\"applied\":%s,\"enabled\":%s,\"offset\":%" PRId32 ",\"minimum\":%" PRIu32 ","
+        "\"maximum\":%" PRIu32 "}\n",
         configuration->schema,
         configuration->schema_version,
         configuration->policy_id,
@@ -115,10 +116,10 @@ GBHostConfigurationStatus gbrt_host_configuration_parse(
     parsed.abi_version = GB_HOST_CONFIGURATION_ABI_VERSION;
     matched = sscanf(
         text,
-        "{\"schema\":\"%63[^\"]\",\"version\":%u,"
+        "{\"schema\":\"%63[^\"]\",\"version\":%" SCNu32 ","
         "\"policy_id\":\"%63[^\"]\",\"applied\":%5[a-z],"
-        "\"enabled\":%5[a-z],\"offset\":%d,\"minimum\":%u,"
-        "\"maximum\":%u}\n%n",
+        "\"enabled\":%5[a-z],\"offset\":%" SCNd32 ",\"minimum\":%" SCNu32 ","
+        "\"maximum\":%" SCNu32 "}\n%n",
         parsed.schema,
         &parsed.schema_version,
         parsed.policy_id,

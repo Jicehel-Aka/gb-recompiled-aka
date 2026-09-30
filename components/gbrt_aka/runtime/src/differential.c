@@ -67,7 +67,7 @@ static void gb_diff_print_state(FILE* stream, const char* label, const GBContext
             "A=%02X B=%02X C=%02X D=%02X E=%02X H=%02X L=%02X F=%02X "
             "IME=%u IME_PENDING=%u HALT=%u STOP=%u STOP_MODE=%u HALT_BUG=%u DS=%u DS_REM=%u "
             "ROM=%03X RAM=%02X WRAM=%u VRAM=%u DMA=%u/%u HDMA=%04X->%04X/%u "
-            "CYC=%u FRAME=%u DIV=%04X\n",
+            "CYC=%" PRIu32 " FRAME=%" PRIu32 " DIV=%04X\n",
             label,
             gb_diff_current_bank(ctx),
             ctx->pc,
@@ -379,7 +379,7 @@ static bool gb_diff_compare_ppu(const GBContext* generated_ctx,
     DIFF_PPU_FIELD(opri, "%u");
     DIFF_PPU_FIELD(stat_irq_state, "%u");
     DIFF_PPU_FIELD(mode, "%u");
-    DIFF_PPU_FIELD(mode_cycles, "%u");
+    DIFF_PPU_FIELD(mode_cycles, "%" PRIu32);
     DIFF_PPU_FIELD(window_line, "%u");
     DIFF_PPU_FIELD(window_triggered, "%u");
     DIFF_PPU_FIELD(frame_ready, "%u");
@@ -486,9 +486,9 @@ static bool gb_diff_compare_contexts(const GBContext* generated,
     DIFF_FIELD(rom_bank_upper, "%u");
     DIFF_FIELD(rtc_mode, "%u");
     DIFF_FIELD(rtc_reg, "%u");
-    DIFF_FIELD(cycles, "%u");
-    DIFF_FIELD(frame_cycles, "%u");
-    DIFF_FIELD(last_sync_cycles, "%u");
+    DIFF_FIELD(cycles, "%" PRIu32);
+    DIFF_FIELD(frame_cycles, "%" PRIu32);
+    DIFF_FIELD(last_sync_cycles, "%" PRIu32);
     DIFF_FIELD(frame_done, "%u");
     DIFF_FIELD(div_counter, "%u");
     DIFF_FIELD(last_joypad, "%u");

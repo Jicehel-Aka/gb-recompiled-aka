@@ -7,6 +7,7 @@
  * Rôle AKA : Utilisé : c'est le coeur de l'émulation (gb_run_cycles, gb_tick, gb_read8/gb_write8). Modifié : voir PATCHES.md.
  */
 
+#include <inttypes.h>
 #include "gbrt.h"
 #include "gbrt_data_mod.h"
 #include "gbrt_port.h"
@@ -422,7 +423,7 @@ static void gbrt_log_oam_write(GBContext* ctx,
     }
 
     fprintf((FILE*)ctx->ppu_trace_file,
-            "[OAM-WRITE] frame=%llu cyc=%u pc=%04X bank=%u ly=%u mode=%u addr=%04X val=%02X accepted=%u reason=%s\n",
+            "[OAM-WRITE] frame=%llu cyc=%" PRIu32 " pc=%04X bank=%u ly=%u mode=%u addr=%04X val=%02X accepted=%u reason=%s\n",
             (unsigned long long)frame_index,
             ctx->frame_cycles,
             ctx->pc,
@@ -442,7 +443,7 @@ static void gbrt_log_dma_start(GBContext* ctx, uint8_t source_high) {
     }
 
     fprintf((FILE*)ctx->ppu_trace_file,
-            "[DMA-START] frame=%llu cyc=%u pc=%04X bank=%u ly=%u mode=%u src=%02X00\n",
+            "[DMA-START] frame=%llu cyc=%" PRIu32 " pc=%04X bank=%u ly=%u mode=%u src=%02X00\n",
             (unsigned long long)frame_index,
             ctx->frame_cycles,
             ctx->pc,
@@ -463,7 +464,7 @@ static void gbrt_log_vram_write(GBContext* ctx,
     }
 
     fprintf((FILE*)ctx->ppu_trace_file,
-            "[VRAM-WRITE] frame=%llu cyc=%u pc=%04X bank=%u ly=%u mode=%u addr=%04X val=%02X accepted=%u reason=%s\n",
+            "[VRAM-WRITE] frame=%llu cyc=%" PRIu32 " pc=%04X bank=%u ly=%u mode=%u addr=%04X val=%02X accepted=%u reason=%s\n",
             (unsigned long long)frame_index,
             ctx->frame_cycles,
             ctx->pc,
@@ -648,11 +649,13 @@ static bool gb_context_try_load_rtc(GBContext* ctx) {
 
     char save_id[64];
     gb_context_get_save_id(ctx, save_id);
+    /* legacy_title doit vivre aussi longtemps que loaded_id (qui peut le
+     * designer plus bas) : declare ici et non dans le bloc if. */
+    char legacy_title[17];
     const char* loaded_id = save_id;
     bool loaded = ctx->callbacks.load_rtc_data(
         ctx, save_id, serialized, sizeof(serialized));
     if (!loaded && ctx->save_id[0] && gb_save_id_differs_from_legacy_title(ctx, save_id)) {
-        char legacy_title[17];
         gb_context_get_rom_title(ctx, legacy_title);
         loaded = ctx->callbacks.load_rtc_data(
             ctx, legacy_title, serialized, sizeof(serialized));
@@ -701,7 +704,7 @@ static bool gb_context_try_load_rtc(GBContext* ctx) {
         printf("[GBRT] Loaded RTC data for '%s' via legacy title fallback\n", loaded_id);
     } else {
         printf(
-            "[GBRT] Loaded RTC data for '%s' (serialization v%u)\n",
+            "[GBRT] Loaded RTC data for '%s' (serialization v%" PRIu32 ")\n",
             loaded_id,
             persisted_version);
     }
@@ -1509,7 +1512,7 @@ bool gb_context_write_state_json(const GBContext* ctx, const char* path) {
         "  \"l\": %u,\n"
         "  \"sp\": %u,\n"
         "  \"pc\": %u,\n"
-        "  \"cycles\": %u,\n"
+        "  \"cycles\": %" PRIu32 ",\n"
         "  \"total_cycles\": %llu,\n"
         "  \"completed_frames\": %llu,\n"
         "  \"ly\": %u,\n"
@@ -1605,7 +1608,7 @@ bool gb_context_write_state_json(const GBContext* ctx, const char* path) {
         success = fprintf(
                       file,
                       "%s{\"space\": %u, \"bank\": %u, "
-                      "\"address\": %u, \"width\": %u}",
+                      "\"address\": %u, \"width\": %" PRIu32 "}",
                       index ? ", " : "",
                       range->space,
                       range->bank,
@@ -1737,7 +1740,7 @@ bool gb_context_load_state_file(GBContext* ctx, const char* path) {
         success = false;
     }
     if (success && header.version != GBSAVESTATE_VERSION) {
-        fprintf(stderr, "[GBRT] Savestate version mismatch for %s (got %u, expected %u)\n",
+        fprintf(stderr, "[GBRT] Savestate version mismatch for %s (got %" PRIu32 ", expected %u)\n",
                 path,
                 header.version,
                 GBSAVESTATE_VERSION);
@@ -3242,7 +3245,7 @@ static void gbrt_trigger_oam_bug_write(GBContext* ctx, uint16_t address) {
         fprintf(stderr,
                 "[OAM-BUG] access=write addr=%04X model=%u ly=%u "
                 "mode=%u visible=%u startup=%u dot=%u row=%s%zu "
-                "cycles=%u pc=%04X\n",
+                "cycles=%" PRIu32 " pc=%04X\n",
                 address,
                 ctx ? (unsigned)ctx->config.model : 0u,
                 ppu ? (unsigned)ppu->ly : 0u,
@@ -3316,7 +3319,7 @@ static void gbrt_trigger_oam_bug_read(GBContext* ctx, uint16_t address) {
         fprintf(stderr,
                 "[OAM-BUG] access=read addr=%04X model=%u ly=%u "
                 "mode=%u visible=%u startup=%u dot=%u row=%s%zu "
-                "cycles=%u pc=%04X\n",
+                "cycles=%" PRIu32 " pc=%04X\n",
                 address,
                 ctx ? (unsigned)ctx->config.model : 0u,
                 ppu ? (unsigned)ppu->ly : 0u,
@@ -4388,7 +4391,7 @@ void gbrt_log_ppu_scanline(GBContext* ctx,
     }
 
     fprintf((FILE*)ctx->ppu_trace_file,
-            "[PPU-LINE] frame=%llu cyc=%u ly=%u mode=%u visible_mode=%u irq_mode=%u mode3_dots=%u hblank_dots=%u sprites=%u lcdc=%02X stat=%02X scx=%u scy=%u wx=%u wy=%u bgp=%02X obp0=%02X obp1=%02X window_line=%u window_triggered=%u\n",
+            "[PPU-LINE] frame=%llu cyc=%" PRIu32 " ly=%u mode=%u visible_mode=%u irq_mode=%u mode3_dots=%u hblank_dots=%u sprites=%u lcdc=%02X stat=%02X scx=%u scy=%u wx=%u wy=%u bgp=%02X obp0=%02X obp1=%02X window_line=%u window_triggered=%u\n",
             (unsigned long long)frame_index,
             ctx->frame_cycles,
             ly,
@@ -4423,7 +4426,7 @@ void gbrt_log_ppu_register_write(GBContext* ctx,
     }
 
     fprintf((FILE*)ctx->ppu_trace_file,
-            "[PPU-WRITE] frame=%llu cyc=%u ly=%u mode=%u addr=%04X old=%02X new=%02X\n",
+            "[PPU-WRITE] frame=%llu cyc=%" PRIu32 " ly=%u mode=%u addr=%04X old=%02X new=%02X\n",
             (unsigned long long)frame_index,
             ctx->frame_cycles,
             ly,
@@ -4440,7 +4443,7 @@ void gbrt_log_oam_snapshot(GBContext* ctx, const char* reason) {
     }
 
     fprintf((FILE*)ctx->ppu_trace_file,
-            "[OAM-SNAPSHOT] frame=%llu cyc=%u pc=%04X bank=%u ly=%u mode=%u reason=%s\n",
+            "[OAM-SNAPSHOT] frame=%llu cyc=%" PRIu32 " pc=%04X bank=%u ly=%u mode=%u reason=%s\n",
             (unsigned long long)frame_index,
             ctx->frame_cycles,
             ctx->pc,
@@ -4478,7 +4481,7 @@ void gbrt_log_stat_irq_check(GBContext* ctx,
     }
 
     fprintf((FILE*)ctx->ppu_trace_file,
-            "[STAT-CHECK] frame=%llu cyc=%u pc=%04X bank=%u ly=%u mode=%u stat=%02X if=%02X ie=%02X reason=%s state=%X enable=%X active=%X prev=%u line=%u\n",
+            "[STAT-CHECK] frame=%llu cyc=%" PRIu32 " pc=%04X bank=%u ly=%u mode=%u stat=%02X if=%02X ie=%02X reason=%s state=%X enable=%X active=%X prev=%u line=%u\n",
             (unsigned long long)frame_index,
             ctx->frame_cycles,
             ctx->pc,
@@ -4510,7 +4513,7 @@ void gbrt_log_stat_irq_request(GBContext* ctx,
     }
 
     fprintf((FILE*)ctx->ppu_trace_file,
-            "[STAT-REQ] frame=%llu cyc=%u pc=%04X bank=%u ly=%u mode=%u stat=%02X reason=%s active=%X if_before=%02X if_after=%02X\n",
+            "[STAT-REQ] frame=%llu cyc=%" PRIu32 " pc=%04X bank=%u ly=%u mode=%u stat=%02X reason=%s active=%X if_before=%02X if_after=%02X\n",
             (unsigned long long)frame_index,
             ctx->frame_cycles,
             ctx->pc,
@@ -4538,7 +4541,7 @@ void gbrt_log_interrupt_service(GBContext* ctx,
     }
 
     fprintf((FILE*)ctx->ppu_trace_file,
-            "[IRQ-SVC] frame=%llu cyc=%u pc=%04X bank=%u sp=%04X vec=%04X name=%s bit=%02X if_before=%02X ie=%02X\n",
+            "[IRQ-SVC] frame=%llu cyc=%" PRIu32 " pc=%04X bank=%u sp=%04X vec=%04X name=%s bit=%02X if_before=%02X ie=%02X\n",
             (unsigned long long)frame_index,
             ctx->frame_cycles,
             pc_before,
@@ -4838,7 +4841,7 @@ void gbrt_note_lcd_transition(GBContext* ctx, bool lcd_enabled, uint8_t old_lcdc
 
         if (gbrt_log_lcd_transitions) {
             fprintf(stderr,
-                    "[LCD] OFF cyc=%u frame_cycles=%u ly=%u mode=%s old=%02X new=%02X transition=%llu\n",
+                    "[LCD] OFF cyc=%" PRIu32 " frame_cycles=%" PRIu32 " ly=%u mode=%s old=%02X new=%02X transition=%llu\n",
                     ctx->cycles,
                     ctx->frame_cycles,
                     (unsigned)ly,
@@ -4860,7 +4863,7 @@ void gbrt_note_lcd_transition(GBContext* ctx, bool lcd_enabled, uint8_t old_lcdc
 
         if (gbrt_log_lcd_transitions) {
             fprintf(stderr,
-                    "[LCD] ON cyc=%u frame_cycles=%u ly=%u mode=%s old=%02X new=%02X span_cycles=%u span_frame_cycles=%u frame_lcd_off_cycles=%u span_index=%llu\n",
+                    "[LCD] ON cyc=%" PRIu32 " frame_cycles=%" PRIu32 " ly=%u mode=%s old=%02X new=%02X span_cycles=%" PRIu32 " span_frame_cycles=%" PRIu32 " frame_lcd_off_cycles=%" PRIu32 " span_index=%llu\n",
                     ctx->cycles,
                     ctx->frame_cycles,
                     (unsigned)ly,
@@ -4874,7 +4877,7 @@ void gbrt_note_lcd_transition(GBContext* ctx, bool lcd_enabled, uint8_t old_lcdc
         }
     } else if (gbrt_log_lcd_transitions) {
         fprintf(stderr,
-                "[LCD] ON cyc=%u frame_cycles=%u ly=%u mode=%s old=%02X new=%02X span_cycles=0 span_frame_cycles=0 frame_lcd_off_cycles=%u span_index=%llu\n",
+                "[LCD] ON cyc=%" PRIu32 " frame_cycles=%" PRIu32 " ly=%u mode=%s old=%02X new=%02X span_cycles=0 span_frame_cycles=0 frame_lcd_off_cycles=%" PRIu32 " span_index=%llu\n",
                 ctx->cycles,
                 ctx->frame_cycles,
                 (unsigned)ly,
@@ -5276,7 +5279,7 @@ void gb_tick(GBContext* ctx, uint32_t cycles) {
 
     if (gbrt_trace_enabled && ctx->cycles - last_log >= 10000) {
         last_log = ctx->cycles;
-        fprintf(stderr, "[TICK] Cycles: %u, PC: 0x%04X, IME: %d, IF: 0x%02X, IE: 0x%02X\n", 
+        fprintf(stderr, "[TICK] Cycles: %" PRIu32 ", PC: 0x%04X, IME: %d, IF: 0x%02X, IE: 0x%02X\n", 
                 ctx->cycles, ctx->pc, ctx->ime, ctx->io[0x0F], ctx->io[0x80]);
     }
 

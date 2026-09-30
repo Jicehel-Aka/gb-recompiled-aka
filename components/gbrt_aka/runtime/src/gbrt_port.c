@@ -7,6 +7,7 @@
  * Rôle AKA : Non utilisé sur l'AKA (infrastructure amont).
  */
 
+#include <inttypes.h>
 #include "gbrt_port.h"
 
 #include "gbrt.h"
@@ -459,7 +460,7 @@ bool gbrt_port_write_state_json(const GBContext* context, const char* path) {
         "  \"schema\": \"gbrecompiled.port-state\",\n"
         "  \"version\": 3,\n"
         "  \"module_id\": \"%s\",\n"
-        "  \"module_version\": %u,\n"
+        "  \"module_version\": %" PRIu32 ",\n"
         "  \"active\": %s,\n"
         "  \"headless\": %s,\n"
         "  \"input_events\": %llu,\n"
@@ -484,7 +485,7 @@ bool gbrt_port_write_state_json(const GBContext* context, const char* path) {
         const GBPortExtension* extension = state->extensions[index];
         result = fprintf(
             file,
-            "%s{\"id\":\"%s\",\"version\":%u,\"priority\":%u}",
+            "%s{\"id\":\"%s\",\"version\":%" PRIu32 ",\"priority\":%" PRIu32 "}",
             index == 0 ? "" : ",",
             extension->extension_id,
             extension->extension_version,
@@ -496,8 +497,8 @@ bool gbrt_port_write_state_json(const GBContext* context, const char* path) {
               file,
               "],\n"
               "  \"frame\": {\n"
-              "    \"canvas_width\": %u,\n"
-              "    \"canvas_height\": %u,\n"
+              "    \"canvas_width\": %" PRIu32 ",\n"
+              "    \"canvas_height\": %" PRIu32 ",\n"
               "    \"commands\": [\n",
         state->last_frame.canvas_width,
               state->last_frame.canvas_height)
@@ -510,8 +511,8 @@ bool gbrt_port_write_state_json(const GBContext* context, const char* path) {
             &state->last_frame.commands[index];
         result = fprintf(
             file,
-            "      {\"type\":\"%s\",\"x\":%d,\"y\":%d,"
-            "\"width\":%d,\"height\":%d,\"color_rgba\":%u",
+            "      {\"type\":\"%s\",\"x\":%" PRId32 ",\"y\":%" PRId32 ","
+            "\"width\":%" PRId32 ",\"height\":%" PRId32 ",\"color_rgba\":%" PRIu32 "",
             command->type == GB_PORT_DRAW_PANEL ? "panel" : "text",
             command->x,
             command->y,

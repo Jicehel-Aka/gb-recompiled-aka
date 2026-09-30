@@ -53,6 +53,7 @@ if [ -n "$ROMS_DIR" ]; then
   echo "$count ROM testée(s)"
 fi
 
+sh tools/check_esp_format.sh || fail=1
 echo
 [ $fail -eq 0 ] && echo "TOUS LES TESTS PASSENT" || echo "DES TESTS ONT ECHOUE"
 exit $fail

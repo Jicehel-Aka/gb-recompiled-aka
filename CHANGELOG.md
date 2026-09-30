@@ -3,6 +3,12 @@
 ## 2026-09-30 — revue complète, ROM de test, SD_files, documentation
 
 **Corrections**
+- **Compilation ESP-IDF (`-Werror=format`)** : sur ESP32-S3 `uint32_t` est `unsigned long`, donc les `%u`/`%d` passes a des `uint32_t`/`int32_t` faisaient echouer le build
+  (`audio_stats.c`, `differential.c`, `gbrt.c`, et aussi `gbrt_port.c` / `gbrt_host_configuration.c`, non signales car le build s'arretait avant). Tous remplaces par `PRIu32`/`PRId32`/`SCNu32`
+  (`<inttypes.h>`), y compris dans les macros `DIFF_FIELD` et le `sscanf` de la configuration hote. Verifie par `tools/check_esp_format.sh` (emule ce type sur PC, lance aussi par `run_tests.sh`). Sortie des ROM inchangee.
+- **Pointeur dangling** (`gbrt.c`, `gb_context_try_load_rtc`) : `loaded_id` pouvait designer `legacy_title`, tableau declare dans un bloc `if` deja termine (comportement indefini, refuse par `-Werror=dangling-pointer`).
+  Le tableau est maintenant declare au niveau de la fonction.
+- **`release.yml`** : les fichiers testes au debut (`components/gamebuino/CMakeLists.txt`, `sdkconfig.defaults`, plus `partitions.csv`) sont maintenant dans le depot.
 - **Identifiant de sauvegarde** : il était coupé au *premier* point du nom (`super.rc.pro.am.gb` -> `super.sav`,
   `solar.striker.gb` -> `solar.sav`, donc collisions possibles). Il ne retire plus que la *dernière* extension. Les noms de plus de 63 caractères
   (limite du runtime) sont raccourcis et complétés par un hachage, pour que deux variantes régionales aux noms longs aient chacune leur sauvegarde.
