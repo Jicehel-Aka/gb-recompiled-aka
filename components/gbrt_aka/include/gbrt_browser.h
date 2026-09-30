@@ -4,7 +4,7 @@
  *
  * Partagé entre le lanceur AKA et le lanceur PC : chacun dessine la liste à sa façon.
  * Les dossiers passent avant les fichiers ; seuls .gb et .gbc sont listés (insensible à la casse).
- * Le navigateur ne sort jamais du dossier racine. Jusqu'à 512 entrées par dossier ; les noms de 96 caractères ou plus sont ignorés.
+ * Le navigateur ne sort jamais du dossier racine. Jusqu'à 1024 entrées par dossier ; les noms de 96 caractères ou plus sont ignorés.
  *
  * Projet  : gb-recompiled-aka — lecteur Game Boy / Game Boy Color pour la Gamebuino AKA (ESP32-S3).
  * Auteur  : Jicehel (Jicehel-Aka)
@@ -22,7 +22,7 @@ extern "C" {
 
 #define GBRT_BROWSER_NAME_MAX 96
 #define GBRT_BROWSER_PATH_MAX 300
-#define GBRT_BROWSER_MAX_ENTRIES 512
+#define GBRT_BROWSER_MAX_ENTRIES 1024
 
 typedef struct GbrtEntry {
     char name[GBRT_BROWSER_NAME_MAX];

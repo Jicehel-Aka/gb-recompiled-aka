@@ -37,10 +37,10 @@ static int entry_cmp(const void *pa, const void *pb) {
     return name_cmp(a->name, b->name);
 }
 
-/* Vrai si le nom se termine par .gb ou .gbc (quelle que soit la casse). */
+/* Vrai si le nom se termine par .gb, .gbc ou .zip (quelle que soit la casse ; un .zip est supposé contenir une ROM). */
 static bool has_rom_ext(const char *name) {
     const char *dot = strrchr(name, '.');
-    return dot && (name_cmp(dot, ".gb") == 0 || name_cmp(dot, ".gbc") == 0);
+    return dot && (name_cmp(dot, ".gb") == 0 || name_cmp(dot, ".gbc") == 0 || name_cmp(dot, ".zip") == 0);
 }
 
 /* dir + "/" + name dans out, sans doubler le séparateur ; false si ça ne tient pas dans `cap`. */
@@ -93,7 +93,7 @@ bool gbrt_browser_rescan(GbrtBrowser *b) {
     return true;
 }
 
-/* Alloue la liste (512 entrées), fixe la racine (sans séparateur final) et lit le dossier. */
+/* Alloue la liste (1024 entrées, ~100 Ko, en PSRAM), fixe la racine (sans séparateur final) et lit le dossier. */
 bool gbrt_browser_open(GbrtBrowser *b, const char *root) {
     if (!b || !root) return false;
     memset(b, 0, sizeof(*b));

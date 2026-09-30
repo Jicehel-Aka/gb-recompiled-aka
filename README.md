@@ -6,10 +6,21 @@ la ROM est lue sur la carte SD, aucun code recompilé n'est nécessaire. Une ver
 
 - Jeux **Game Boy** et **Game Boy Color** (mode couleur automatique d'après l'en-tête de la cartouche), cartouches ROM seule, MBC1, MBC2, MBC3 (avec horloge), MBC5.
 - Son stéréo 44,1 kHz (mixé en mono sur l'AKA), sauvegardes batterie `.sav` et horloge `.rtc` sur la carte SD.
+- **ROM zippées** : un `.zip` contenant une ROM se lance comme un `.gb` (décompression à la volée, CRC vérifié) ; voir ci-dessous.
 - Sélecteur de ROM avec sous-dossiers, zoom 1x / 1,5x, saut d'affichage adaptatif si la console prend du retard.
 
 Documentation : [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (comment c'est construit) · [docs/ROMS.md](docs/ROMS.md) (ROM fournies et résultats de test) ·
 [PATCHES.md](PATCHES.md) (changements du runtime amont) · [CHANGELOG.md](CHANGELOG.md).
+
+## ROM zippées
+
+Le sélecteur affiche aussi les fichiers `.zip` ; choisir l'un d'eux décompresse sa **première** entrée `.gb` ou `.gbc` (dossiers internes, fichiers cachés et `__MACOSX` ignorés) directement en mémoire, puis vérifie son CRC-32.
+- Gérés : zip classique, compression deflate ou « stocké ». Refusés avec un message : ZIP64, zip chiffré, autres méthodes (Deflate64, LZMA, bzip2), zip sans ROM, zip corrompu.
+- Un zip qui contient plusieurs ROM : seule la première est lancée (un zip = un jeu, comme les jeux de ROM « No-Intro » / GoodGB).
+- Sauvegardes : `/GBSAVES/<nom_du_zip>.sav` (nom du zip sans `.zip`, raccourci + haché au-delà de 63 caractères) ; renommer le zip change donc le nom de la sauvegarde.
+- Mémoire : la ROM décompressée est d'abord dans un tampon puis copiée dans le contexte, comme pour un `.gb` (crête = 2 x la taille de la ROM en PSRAM).
+- Vitesse : le décodeur est interne (`gbrt_zip.c`, sans dépendance, identique sur la console et sur PC). Sur PC une ROM de 2 Mo se décompresse en ~25 ms ; **non mesuré sur la console**.
+- Vérifié sur PC : les 1659 zips du jeu de ROM fourni (Europe / USA / Japan / ...) donnent exactement le même contenu que Python (`zipfile`), et 25 d'entre eux ont été lancés 300 images sous ASAN/UBSAN ; 720 archives tronquées/altérées au hasard ne plantent pas.
 
 ## Installer sur la console
 
@@ -104,7 +115,7 @@ Un raccourci de lecture de ROM (éviter la table de mods) a été essayé puis r
 
 - Mappers pris en charge : ROM seule, MBC1, MBC2, MBC3 (RTC), MBC5 (vérifié dans `gbrt.c`). MMM01, MBC6, MBC7, HuC1/HuC3, Game Boy Camera, TAMA5 ne sont pas gérés.
 - Pas de Super Game Boy (les jeux « SGB Enhanced » tournent en Game Boy normal), pas de câble link, pas de sauvegarde d'état instantanée dans le lanceur.
-- Les noms de ROM de 96 caractères ou plus sont ignorés par le sélecteur ; 512 entrées maximum par dossier.
+- Les noms de ROM de 96 caractères ou plus sont ignorés par le sélecteur ; 1024 entrées maximum par dossier (au-delà, « Liste tronquee » s'affiche : range les ROM en sous-dossiers).
 
 ## Licences
 

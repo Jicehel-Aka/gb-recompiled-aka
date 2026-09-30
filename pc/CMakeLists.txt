@@ -22,6 +22,7 @@ add_executable(gb_recompiled_pc
   pc_ui.c
   ${GBRT_DIR}/src/gbrt_aka.c
   ${GBRT_DIR}/src/gbrt_browser.c
+  ${GBRT_DIR}/src/gbrt_zip.c
   ${GBRT_RUNTIME_SRCS})
 
 target_include_directories(gb_recompiled_pc PRIVATE

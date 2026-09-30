@@ -278,7 +278,7 @@ static bool pick_rom(GbrtBrowser *br, std::string &path) {
             uint16_t col = (idx == br->sel) ? color_white : (e.is_dir ? color_lightblue : color_gray);
             draw_text(8, 26 + i * 11, line, col);
         }
-        if (br->truncated) draw_text(8, 214, "Liste tronquee (512 max)", color_orange);
+        if (br->truncated) draw_text(8, 214, "Liste tronquee (1024 max)", color_orange);
         draw_text(8, 228, "A:jouer/ouvrir B:retour MENU long:loader", color_darkgray);
         g_gfx->update();
         vTaskDelay(pdMS_TO_TICKS(16));
@@ -335,9 +335,7 @@ extern "C" void app_main(void) {
 
         int rc = gbrt_aka_run(&hal, path.c_str(), SAVE_DIR, 0);
         if (rc != GBRT_AKA_OK) {
-            char msg[32];
-            snprintf(msg, sizeof(msg), "Erreur %d", rc);
-            show_message("Impossible de lancer la ROM", msg, 2500);
+            show_message("Impossible de lancer la ROM", gbrt_aka_strerror(rc), 2500);
         }
         /* Attend le relâchement de RUN+MENU (2 s max) : sinon MENU, encore tenu, renverrait au loader. */
         for (int i = 0; i < 125; ++i) {

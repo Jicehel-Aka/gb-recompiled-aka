@@ -47,16 +47,23 @@ jobs:
       - name: Tests de non-régression (conversion couleur exhaustive, saut d'affichage, mode Game Boy Color)
         run: |
           R=components/gbrt_aka
-          gcc -std=gnu11 -O2 -Wno-unused-function -I$R/include -I$R/runtime/include tests/test_convert.c $R/src/gbrt_aka.c $R/runtime/src/*.c -o test_convert -lm
+          gcc -std=gnu11 -O2 -Wno-unused-function -I$R/include -I$R/runtime/include tests/test_convert.c $R/src/gbrt_aka.c $R/src/gbrt_zip.c $R/runtime/src/*.c -o test_convert -lm
           ./test_convert
-          gcc -std=gnu11 -O2 -Wno-unused-function -I$R/include -I$R/runtime/include tests/test_saveid.c $R/src/gbrt_aka.c $R/runtime/src/*.c -o test_saveid -lm
+          gcc -std=gnu11 -O2 -Wno-unused-function -I$R/include -I$R/runtime/include tests/test_saveid.c $R/src/gbrt_aka.c $R/src/gbrt_zip.c $R/runtime/src/*.c -o test_saveid -lm
           ./test_saveid
           python3 tools/make_test_rom.py test.gb
-          gcc -std=gnu11 -O2 -Wno-unused-function -I$R/include -I$R/runtime/include host_test/frameskip_test.c $R/src/gbrt_aka.c $R/runtime/src/*.c -o frameskip_test -lm
+          gcc -std=gnu11 -O2 -Wno-unused-function -I$R/include -I$R/runtime/include host_test/frameskip_test.c $R/src/gbrt_aka.c $R/src/gbrt_zip.c $R/runtime/src/*.c -o frameskip_test -lm
           ./frameskip_test test.gb
           python3 tools/make_cgb_test_rom.py test.gbc
-          gcc -std=gnu11 -O2 -Wno-unused-function -I$R/include -I$R/runtime/include tests/test_cgb.c $R/src/gbrt_aka.c $R/runtime/src/*.c -o test_cgb -lm
+          gcc -std=gnu11 -O2 -Wno-unused-function -I$R/include -I$R/runtime/include tests/test_cgb.c $R/src/gbrt_aka.c $R/src/gbrt_zip.c $R/runtime/src/*.c -o test_cgb -lm
           ./test_cgb test.gbc
+
+      - name: Test des ROM dans un .zip (décodeur deflate, erreurs, ASAN/UBSAN)
+        run: |
+          R=components/gbrt_aka
+          python3 tools/make_zip_fixtures.py zipfix
+          gcc -std=gnu11 -Wall -Wextra -g -fsanitize=address,undefined -I$R/include tests/test_zip.c $R/src/gbrt_zip.c -o test_zip
+          ./test_zip zipfix
 
       - name: Test de fumée (ROM synthétique, SDL sans écran ni son)
         env:

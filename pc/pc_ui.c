@@ -82,7 +82,7 @@ void ui_draw_browser(uint32_t *fb, const GbrtBrowser *b, const char *status, int
         fill(fb, UI_W - 5, LIST_Y, 2, track, 0xFF203040u);
         fill(fb, UI_W - 5, y, 2, h, C_DIR);
     }
-    if (b->truncated) put_text(fb, 8, UI_H - 24, "Liste tronquee (512 max)", C_WARN);
+    if (b->truncated) put_text(fb, 8, UI_H - 24, "Liste tronquee (1024 max)", C_WARN);
     if (status && status[0]) put_text(fb, 8, UI_H - 24, status, C_WARN);
     put_text(fb, 8, UI_H - 12, "Entree:jouer Retour:dossier Echap:quit", C_HINT);
 }

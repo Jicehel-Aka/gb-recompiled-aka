@@ -8,7 +8,7 @@ SD_files/
     meta.json         titre, description, auteur, version, date affiches par le loader
     screen.bmp        image affichee par le loader (BMP 24 bits, 160x120)
     Picture.png       image du catalogue / ecran de demarrage (PNG, 320x240)
-  GB/                 tes ROM : le lanceur parcourt /GB et tous ses sous-dossiers (.gb et .gbc)
+  GB/                 tes ROM : le lanceur parcourt /GB et tous ses sous-dossiers (.gb, .gbc et .zip contenant une ROM)
     Jeux_GB/          jeux Game Boy fournis pour les tests (8 ROM)
     GBC_Homebrew/     8 homebrew libres, dont 6 en mode couleur exclusif (licences dans LICENCES.txt)
     Gros_jeux_test/   5 jeux de 256 Ko a 1 Mo (MBC1/MBC2/MBC5, sauvegardes batterie, Pokemon Jaune en mode couleur)

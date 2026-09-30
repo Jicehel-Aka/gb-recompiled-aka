@@ -44,7 +44,12 @@ enum {
     GBRT_AKA_ERR_ROM_SIZE = -3,
     GBRT_AKA_ERR_NOMEM = -4,
     GBRT_AKA_ERR_CONTEXT = -5,
+    GBRT_AKA_ERR_ZIP = -6,         /**< .zip illisible, non géré (ZIP64, chiffré, méthode rare) ou corrompu (CRC) */
+    GBRT_AKA_ERR_ZIP_NO_ROM = -7,  /**< .zip sans entrée .gb / .gbc */
 };
+
+/** Message court (français, sans accent, <= 31 caractères) décrivant un code d'erreur de gbrt_aka_run. */
+const char *gbrt_aka_strerror(int rc);
 
 /**
  * Fonctions fournies par l'application. read_buttons, time_us et sleep_us sont obligatoires,

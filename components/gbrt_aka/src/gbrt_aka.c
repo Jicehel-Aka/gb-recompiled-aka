@@ -18,6 +18,7 @@
  * Licence : voir README.md (runtime gb-recompiled : MIT, © arcanite24 ; composant gamebuino : LGPL, inclus dans components/gamebuino).
  */
 #include "gbrt_aka.h"
+#include "gbrt_zip.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -230,8 +231,38 @@ static void apply_buttons(GBContext *ctx, uint8_t pressed) {
 /* Chargement de la ROM                                                */
 /* ------------------------------------------------------------------ */
 
-/* Lit toute la ROM en mémoire (malloc). Refuse < 0x150 octets (pas d'en-tête complet) ou > 8 Mo. */
+/* Message lisible pour un code d'erreur (affiché par le lanceur). */
+const char *gbrt_aka_strerror(int rc) {
+    switch (rc) {
+    case GBRT_AKA_OK: return "OK";
+    case GBRT_AKA_ERR_ARGS: return "Arguments invalides";
+    case GBRT_AKA_ERR_ROM_OPEN: return "Fichier illisible";
+    case GBRT_AKA_ERR_ROM_SIZE: return "Taille de ROM invalide";
+    case GBRT_AKA_ERR_NOMEM: return "Memoire insuffisante";
+    case GBRT_AKA_ERR_CONTEXT: return "Emulateur non initialise";
+    case GBRT_AKA_ERR_ZIP: return "Zip non gere ou corrompu";
+    case GBRT_AKA_ERR_ZIP_NO_ROM: return "Aucune ROM .gb/.gbc dans le zip";
+    default: return "Erreur inconnue";
+    }
+}
+
+/* Lit une ROM d'un .zip (première entrée .gb/.gbc) et traduit le code d'erreur du module zip. */
+static int read_rom_zip(const char *path, uint8_t **out, size_t *out_size) {
+    int r = gbrt_zip_read_rom(path, out, out_size, ROM_MAX_BYTES, NULL, 0);
+    switch (r) {
+    case GBRT_ZIP_OK: return GBRT_AKA_OK;
+    case GBRT_ZIP_ERR_IO: return GBRT_AKA_ERR_ROM_OPEN;
+    case GBRT_ZIP_ERR_NO_ROM: return GBRT_AKA_ERR_ZIP_NO_ROM;
+    case GBRT_ZIP_ERR_SIZE: return GBRT_AKA_ERR_ROM_SIZE;
+    case GBRT_ZIP_ERR_NOMEM: return GBRT_AKA_ERR_NOMEM;
+    default: return GBRT_AKA_ERR_ZIP;
+    }
+}
+
+/* Lit toute la ROM en mémoire (malloc). Refuse < 0x150 octets (pas d'en-tête complet) ou > 8 Mo.
+ * Un fichier .zip est décompressé à la volée (voir gbrt_zip.h). */
 static int read_rom(const char *path, uint8_t **out, size_t *out_size) {
+    if (gbrt_zip_has_ext(path)) return read_rom_zip(path, out, out_size);
     FILE *f = fopen(path, "rb");
     if (!f) return GBRT_AKA_ERR_ROM_OPEN;
     if (fseek(f, 0, SEEK_END) != 0) { fclose(f); return GBRT_AKA_ERR_ROM_OPEN; }

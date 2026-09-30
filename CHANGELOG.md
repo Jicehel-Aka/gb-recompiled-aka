@@ -23,6 +23,8 @@
 - **`GB_OK` / `GB_ERR`** : le lanceur les utilise maintenant via `gb_err.h` (contrat du mixeur : 0 = tampon rempli) ; `gb_core::init()` est testé (arrêt propre si le matériel est en échec).
 
 **Ajouts**
+- **ROM zippées** : le sélecteur accepte les `.zip` ; la première entrée `.gb`/`.gbc` est décompressée à la volée (`gbrt_zip.c/.h`, décodeur deflate interne, CRC-32 vérifié, ZIP64/chiffré/méthodes rares refusés). Nouveaux codes d'erreur `GBRT_AKA_ERR_ZIP`, `GBRT_AKA_ERR_ZIP_NO_ROM` et `gbrt_aka_strerror()` : le lanceur affiche un message lisible au lieu de « Erreur -N ». Tests : `tests/test_zip.c` + `tools/make_zip_fixtures.py` (14 cas, ASAN/UBSAN), comparaison .zip/.gb, étape CI ajoutée.
+- Sélecteur : 1024 entrées par dossier au lieu de 512 (le dossier `Japan` du jeu de ROM zippées en a 773).
 - `components/` complété : `gamebuino` (version récente), `aka_runtime`, `aka_font`. Le lanceur a été compilé (`-Wall -Wextra -Werror`) contre les vrais en-têtes du composant, avec de simples bouchons pour les seuls en-têtes ESP-IDF.
 - `sdkconfig.defaults` et `partitions.csv` (repris d'AKA-Love) : noms longs FAT, tick 1 ms, pile principale 8 Ko (le défaut de 3,5 Ko est trop juste pour le lecteur), -O2, PSRAM octale.
 - `SD_files/` : cartouche `GB_EMULATOR` (`meta.json`, `screen.bmp`, `Picture.png`), ROM de test, sauvegardes.

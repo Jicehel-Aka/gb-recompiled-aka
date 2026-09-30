@@ -8,7 +8,7 @@
 file(GLOB GBRT_SRCS runtime/src/*.c)
 
 idf_component_register(
-    SRCS ${GBRT_SRCS} src/gbrt_aka.c src/gbrt_browser.c
+    SRCS ${GBRT_SRCS} src/gbrt_aka.c src/gbrt_browser.c src/gbrt_zip.c
     INCLUDE_DIRS include runtime/include
     REQUIRES esp_timer heap
     LDFRAGMENTS linker.lf

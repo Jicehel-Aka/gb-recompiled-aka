@@ -8,6 +8,7 @@
             ┌───────────────▼─────────────────────────────▼───────────────────────────────▼──────────┐
             │ components/gbrt_aka/src/gbrt_aka.c    boucle 59,73 Hz, entrées, .sav/.rtc, conversions  │
             │ components/gbrt_aka/src/gbrt_browser.c  navigation dossiers (partagée AKA / PC)          │
+            │ components/gbrt_aka/src/gbrt_zip.c      ROM dans un .zip : annuaire, deflate, CRC-32 (AKA / PC)  │
             └───────────────┬────────────────────────────────────────────────────────────────────────┘
                             │ API du runtime (gb_run_cycles, gb_reset_frame, callbacks)
             ┌───────────────▼────────────────────────────────────────────────────────────────────────┐
