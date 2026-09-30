@@ -17,7 +17,7 @@
  *
  * Projet  : gb-recompiled-aka — lecteur Game Boy / Game Boy Color pour la Gamebuino AKA (ESP32-S3).
  * Auteur  : Jicehel (Jicehel-Aka)
- * Licence : voir README.md (runtime gb-recompiled : MIT, © arcanite24 ; composant gamebuino : LGPL, non inclus).
+ * Licence : voir README.md (runtime gb-recompiled : MIT, © arcanite24 ; composant gamebuino : LGPL, inclus dans components/gamebuino).
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,9 +33,15 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+/* gb_err.h n'existe que dans le composant gamebuino récent. L'ancien (sans set_run_power_off) éteint la console à CHAQUE appui sur RUN,
+ * or RUN sert ici de Start : refuser de compiler vaut mieux qu'une console qui s'éteint en plein jeu. */
+#if !__has_include("gb_err.h")
+#error "composant gamebuino trop ancien : il faut la version avec gb_err.h et gb_buttons::set_run_power_off() (ex. celle de pAKAman / AKA-Love). Avec l'ancienne, RUN (= Start) éteindrait la console."
+#endif
 #include "gb_audio_player.h"
 #include "gb_common.h"
 #include "gb_core.h"
+#include "gb_err.h"
 #include "gb_graphics.h"
 #include "gbrt_aka.h"
 #include "gbrt_browser.h"
@@ -58,7 +64,7 @@ static gb_audio_player *g_audio; /* mixeur audio du composant gamebuino */
 /* ------------------------------------------------------------------ */
 
 /* Piste du mixeur alimentée par l'émulateur : push_stereo() écrit (mixage mono L+R)/2), play_callback() lit à la demande du mixeur.
- * Si le tampon est plein on jette le surplus ; s'il est vide on renvoie GB_ERR (le mixeur n'envoie alors rien). */
+ * Si le tampon est plein on jette le surplus ; s'il est vide on renvoie GB_ERR (le mixeur ignore alors la piste ; GB_OK = 0 = tampon rempli, contrat de gb_audio_player.cpp). */
 class GbStreamTrack : public gb_audio_track_base {
 public:
     void push_stereo(const int16_t *lr, size_t frames) {
@@ -290,7 +296,11 @@ extern "C" void app_main(void) {
     g_gfx = &gfx;
     g_audio = &audio;
 
-    core.init();
+    if (core.init() != GB_OK) { /* échec critique (I2C, ADC, expander, ampli) : le LCD n'est pas initialisé, on ne peut qu'écrire sur la liaison série */
+        printf("[gb] gb_core::init() a echoue : arret\n");
+        return;
+    }
+    core.buttons.set_run_power_off(false); /* RUN = Start : ne doit JAMAIS éteindre la console (seul RUN+MENU 500 ms quitte le jeu) */
     gfx.set_refresh_rate(60); /* ~59,73 Hz natif : évite le battement avec le vsync 70/35 Hz */
     audio.add_track(&g_track, 1.0f);
     mkdir(GB_DIR, 0777);

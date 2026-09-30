@@ -11,7 +11,7 @@
  *
  * Projet  : gb-recompiled-aka — lecteur Game Boy / Game Boy Color pour la Gamebuino AKA (ESP32-S3).
  * Auteur  : Jicehel (Jicehel-Aka)
- * Licence : voir README.md (runtime gb-recompiled : MIT, © arcanite24 ; composant gamebuino : LGPL, non inclus).
+ * Licence : voir README.md (runtime gb-recompiled : MIT, © arcanite24 ; composant gamebuino : LGPL, inclus dans components/gamebuino).
  */
 #ifndef GBRT_AKA_ALLOC_H
 #define GBRT_AKA_ALLOC_H

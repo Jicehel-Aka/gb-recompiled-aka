@@ -1,3 +1,8 @@
+# ============================================================================
+# CI console : compile le firmware ESP32-S3 avec ESP-IDF et prépare SD_files.zip (dossier à copier sur la carte SD).
+#
+# Projet : gb-recompiled-aka (Gamebuino AKA). Auteur : Jicehel. Voir README.md.
+# ============================================================================
 name: Build AKA (ESP32-S3)
 
 on:
@@ -55,6 +60,16 @@ jobs:
           mkdir -p dist
           cp build/gb_recompiled_aka.bin "dist/gb-recompiled-aka-${VERSION}.bin"
           cp components/gbrt_aka/runtime/LICENSE dist/LICENSE-gb-recompiled.txt
+
+      - name: SD_files.zip (à copier à la racine de la carte SD)
+        run: |
+          # Cartouche du loader AKA : firmware.bin + meta.json + screen.bmp + Picture.png.
+          # Seules les ROM libres (GBC_Homebrew) sont jointes ; ajoute les tiennes dans GB/ sur la carte.
+          mkdir -p sd/GB_EMULATOR sd/GB
+          cp SD_files/GB_EMULATOR/* sd/GB_EMULATOR/
+          cp build/gb_recompiled_aka.bin sd/GB_EMULATOR/firmware.bin
+          cp -r SD_files/GB/GBC_Homebrew sd/GB/
+          (cd sd && zip -r "../dist/SD_files-${VERSION}.zip" .)
 
       - uses: actions/upload-artifact@v4
         with:

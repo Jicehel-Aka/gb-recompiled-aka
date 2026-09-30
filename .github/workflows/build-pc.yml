@@ -1,3 +1,8 @@
+# ============================================================================
+# CI PC : compile Linux + Windows, lance les tests, produit .tar.gz et .zip.
+#
+# Projet : gb-recompiled-aka (Gamebuino AKA). Auteur : Jicehel. Voir README.md.
+# ============================================================================
 name: Build PC (Linux + Windows)
 
 on:
@@ -44,6 +49,8 @@ jobs:
           R=components/gbrt_aka
           gcc -std=gnu11 -O2 -Wno-unused-function -I$R/include -I$R/runtime/include tests/test_convert.c $R/src/gbrt_aka.c $R/runtime/src/*.c -o test_convert -lm
           ./test_convert
+          gcc -std=gnu11 -O2 -Wno-unused-function -I$R/include -I$R/runtime/include tests/test_saveid.c $R/src/gbrt_aka.c $R/runtime/src/*.c -o test_saveid -lm
+          ./test_saveid
           python3 tools/make_test_rom.py test.gb
           gcc -std=gnu11 -O2 -Wno-unused-function -I$R/include -I$R/runtime/include host_test/frameskip_test.c $R/src/gbrt_aka.c $R/runtime/src/*.c -o frameskip_test -lm
           ./frameskip_test test.gb

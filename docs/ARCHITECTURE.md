@@ -63,7 +63,9 @@ Sans ce placement ESP-IDF enverrait en PSRAM tout bloc > 16 Ko, donc le PPU et l
 | `main/aka_gb_main.cpp` | lanceur AKA |
 | `components/gbrt_aka/src`, `include` | couche AKA, navigateur, allocation, interface publique |
 | `components/gbrt_aka/runtime` | runtime gb-recompiled (sources `src/`, en-têtes `include/`) |
+| `components/gamebuino`, `aka_runtime`, `aka_font` | bibliothèque AKA (écran, boutons, son, SD), socle des portages, police accentuée — fournis, non modifiés |
 | `components/gbrt_aka/linker.lf`, `Kconfig` | code chaud en IRAM, options menuconfig |
+| `sdkconfig.defaults`, `partitions.csv` | réglages carte AKA (repris d'AKA-Love) et table de partitions avec le loader OTA_1 |
 | `pc/` | frontend SDL2 + police 8x8 |
 | `tests/`, `host_test/` | tests automatiques et bancs de mesure |
 | `tools/` | extraction de ROM des `.bin` META, ROM synthétiques, `run_tests.sh` |
